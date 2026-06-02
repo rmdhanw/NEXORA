@@ -30,12 +30,14 @@ Ikuti langkah-langkah berikut untuk menjalankan NEXORA di komputer lokal Anda:
    git clone [https://github.com/rmdhanw/NEXORA.git](https://github.com/rmdhanw/NEXORA.git)
    cd NEXORA
 2. **Install Depedensi Backend & Frontend**
+    ```bash
    composer install
    npm install
 3. **Pengaturan Environtment (.env)**
     Salin file .env.example menjadi .env:
     cp .env.example .env
     Buka file .env, sesuaikan pengaturan database Anda serta wajib menambahkan kredensial Cloudinary :
+    ```bash
     DB_DATABASE=nexora
     DB_USERNAME=root
     DB_PASSWORD=
@@ -43,10 +45,14 @@ Ikuti langkah-langkah berikut untuk menjalankan NEXORA di komputer lokal Anda:
     CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 
 4. **Generate Application Key & Migrate Database**
+    ```bash
     php artisan key:generate
     php artisan migrate
 
 5. **Build Asset (Tailwind CSS)**
+    ```bash
     npm run build
 
-6. **Build Asset (Tailwind CSS)**
+6. **Jalankan Server Lokal**
+    ```bash
+    php artisan serve
