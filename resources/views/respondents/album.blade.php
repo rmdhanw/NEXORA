@@ -19,16 +19,27 @@
 
                 @if($respondent->album && count($respondent->album) > 0)
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @foreach($respondent->album as $foto)
-                            <div class="group relative aspect-square rounded-2xl overflow-hidden shadow-md border border-gray-200">
-                                <img src="{{ $foto }}" alt="Foto Album" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-                                    <a href="{{ $foto }}" target="_blank" class="p-2 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full text-white transition" title="Lihat Penuh">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                    </a>
+                        @forelse($respondent->album as $index => $fotoUrl)
+                                <div class="group relative rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50 aspect-square">
+
+                                    <img src="{{ $fotoUrl }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Foto Album">
+
+                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
+
+                                        <a href="{{ $fotoUrl }}" target="_blank" class="p-2.5 bg-white/20 hover:bg-white/40 rounded-full text-white transition backdrop-blur-md shadow-sm" title="Lihat Ukuran Penuh">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        </a>
+
+                                        <a href="{{ str_replace('/upload/', '/upload/fl_attachment/', $fotoUrl) }}" download="Foto_{{ $respondent->nama }}_{{ $index + 1 }}.jpg" class="p-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-full text-white transition shadow-[0_4px_14px_0_rgb(79,70,229,0.39)] hover:-translate-y-0.5" title="Unduh Foto Ke Perangkat">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @empty
+                                <div class="col-span-full py-12 text-center">
+                                    <p class="text-gray-500 font-medium">Belum ada foto dalam album ini.</p>
+                                </div>
+                            @endforelse
                     </div>
                 @else
                     <div class="text-center py-20">

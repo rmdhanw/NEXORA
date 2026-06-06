@@ -19,6 +19,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('projects', ProjectController::class);
     Route::get('/projects/{project}/dashboard', [ProjectController::class, 'show'])->name('projects.show');
+    Route::delete('/respondents/bulk-destroy', [RespondentController::class, 'bulkDestroy'])->name('respondents.bulk-destroy');
     Route::resource('respondents', RespondentController::class)->except(['index']);
     Route::get('/respondents/{respondent}/album', [RespondentController::class, 'album'])->name('respondents.album');
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Respondent;
 use Illuminate\Http\Request;
 use Cloudinary\Cloudinary;
+use Illuminate\Support\Facades\Auth; // Pastikan ini ada di atas
 
 class RespondentController extends Controller
 {
@@ -15,19 +16,19 @@ class RespondentController extends Controller
         if (!$projectId) {
             abort(404, 'Project ID tidak ditemukan.');
         }
-        return view('respondents.create', compact('projectId'));
+
+        // Panggil data project agar master_fields-nya bisa dibaca di View
+        $project = \App\Models\Project::findOrFail($projectId);
+
+        return view('respondents.create', compact('project', 'projectId'));
     }
 
     // Menyimpan Data Baru (Beserta Album)
     public function store(Request $request)
     {
+        // 1. Hapus 'tanggal_lahir' dari validasi
         $request->validate([
             'project_id' => 'required|exists:projects,id',
-            'nama' => 'required|string|max:255',
-            'tempat_lahir' => 'required|string|max:255',
-            'tanggal_lahir' => 'required|date',
-            'alamat' => 'required|string',
-            'nik' => 'required|string|max:20',
             'album.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:belum_diinput,sudah_diinput',
@@ -44,16 +45,13 @@ class RespondentController extends Controller
             }
         }
 
-        $coreFields = ['_token', 'project_id', 'nama', 'tempat_lahir', 'tanggal_lahir', 'alamat', 'nik', 'album', 'keterangan', 'status'];
+        // 2. Hapus 'tanggal_lahir' dari coreFields
+        $coreFields = ['_token', 'project_id', 'album', 'keterangan', 'status'];
         $dynamicData = $request->except($coreFields);
 
+        // 3. Hapus 'tanggal_lahir' dari proses create()
         Respondent::create([
             'project_id' => $request->project_id,
-            'nama' => $request->nama,
-            'tempat_lahir' => $request->tempat_lahir,
-            'tanggal_lahir' => $request->tanggal_lahir,
-            'alamat' => $request->alamat,
-            'nik' => $request->nik,
             'album' => !empty($albumUrls) ? $albumUrls : null,
             'keterangan' => $request->keterangan,
             'status' => $request->status,
@@ -70,14 +68,10 @@ class RespondentController extends Controller
     }
 
     // Memperbarui Data (Beserta Modifikasi Album)
-    public function update(Request $request, Respondent $respondent)
+   public function update(Request $request, Respondent $respondent)
     {
+        // 1. Hapus 'tanggal_lahir' dari validasi
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'tempat_lahir' => 'required|string|max:255',
-            'tanggal_lahir' => 'required|date',
-            'alamat' => 'required|string',
-            'nik' => 'required|string|max:20',
             'album.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:belum_diinput,sudah_diinput',
@@ -88,21 +82,17 @@ class RespondentController extends Controller
         if ($request->hasFile('album')) {
             $cloudinary = new Cloudinary(env('CLOUDINARY_URL'));
 
-            // Hapus file lama di Cloudinary (Dengan sistem pengaman Try-Catch)
             if (!empty($albumUrls)) {
                 foreach ($albumUrls as $url) {
                     $publicId = $this->getCloudinaryPublicId($url);
                     if ($publicId) {
                         try {
                             $cloudinary->uploadApi()->destroy($publicId);
-                        } catch (\Exception $e) {
-                            // \Log::warning('Gagal hapus foto lama di Cloudinary: ' . $e->getMessage());
-                        }
+                        } catch (\Exception $e) {}
                     }
                 }
             }
 
-            // Upload foto-foto baru
             $albumUrls = [];
             foreach ($request->file('album') as $file) {
                 $uploadedFile = $cloudinary->uploadApi()->upload($file->getRealPath(), [
@@ -112,22 +102,19 @@ class RespondentController extends Controller
             }
         }
 
-        $coreFields = ['_token', '_method', 'nama', 'tempat_lahir', 'tanggal_lahir', 'alamat', 'nik', 'album', 'keterangan', 'status'];
+        // 2. Hapus 'tanggal_lahir' dari coreFields agar ia ditangkap sebagai $dynamicData (JSON)
+        $coreFields = ['_token', '_method', 'album', 'keterangan', 'status'];
         $dynamicData = $request->except($coreFields);
 
+        // 3. Hapus 'tanggal_lahir' dari proses fill()
         $respondent->fill([
-            'nama' => $request->nama,
-            'tempat_lahir' => $request->tempat_lahir,
-            'tanggal_lahir' => $request->tanggal_lahir,
-            'alamat' => $request->alamat,
-            'nik' => $request->nik,
             'album' => !empty($albumUrls) ? $albumUrls : null,
             'keterangan' => $request->keterangan,
             'status' => $request->status,
             'data_tambahan' => !empty($dynamicData) ? $dynamicData : null,
         ])->save();
 
-        return redirect()->route('projects.show', $respondent->project_id)->with('success', 'Data responden beserta album berhasil diperbarui!');
+        return redirect()->route('projects.show', $respondent->project_id)->with('success', 'Data responden berhasil diperbarui!');
     }
 
   // Menghapus Data Permanen
@@ -181,5 +168,49 @@ class RespondentController extends Controller
         }
 
         return null;
+    }
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:respondents,id',
+        ]);
+
+// Berikan 4 parameter secara eksplisit ('and' dan false) untuk memuaskan Intelephense
+        $respondents = Respondent::query()->whereIn('id', $request->input('ids'), 'and', false)->get();
+        $deletedCount = 0;
+
+        // Inisialisasi Cloudinary sekali saja di luar loop agar proses hapus massal lebih cepat
+        $cloudinary = new Cloudinary(env('CLOUDINARY_URL'));
+        /** @var \Cloudinary\Api\Upload\UploadApi $uploadApi */
+        $uploadApi = $cloudinary->uploadApi();
+
+        foreach ($respondents as $respondent) {
+            // Keamanan: Pastikan responden dimiliki oleh project milik user yang sedang login
+            if ($respondent->project->user_id === Auth::id()) {
+
+                // Hapus semua foto dari Cloudinary dengan sistem pengaman Try-Catch
+                if (is_array($respondent->album) && !empty($respondent->album)) {
+                    foreach ($respondent->album as $fotoUrl) {
+                        // Gunakan fungsi private getCloudinaryPublicId yang sudah Anda buat
+                        $publicId = $this->getCloudinaryPublicId($fotoUrl);
+
+                        if ($publicId) {
+                            try {
+                                $uploadApi->destroy($publicId);
+                            } catch (\Exception $e) {
+                                // Abaikan jika foto mungkin sudah terhapus sebelumnya di Cloudinary
+                            }
+                        }
+                    }
+                }
+
+                // Hapus dari database menggunakan metode destroy() agar Intelephense tenang
+                Respondent::destroy($respondent->id);
+                $deletedCount++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$deletedCount data responden dan fotonya berhasil dihapus secara permanen!");
     }
 }
