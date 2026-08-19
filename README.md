@@ -1,4 +1,4 @@
-# NEXORA (Next Generation Observation and Response Acquisition) 🚀
+# NEXORA (Next Generation Observation and Response Acquisition) 
 
 NEXORA adalah sistem informasi manajemen survei, observasi lapangan, dan pembangun formulir dinamis (*Dynamic Form Builder*) berbasis web yang dirancang untuk digitalisasi pengolahan data secara fleksibel, cepat, rapi, dan terstruktur.
 
@@ -28,7 +28,7 @@ NEXORA adalah sistem informasi manajemen survei, observasi lapangan, dan pembang
 
 ---
 
-## 📁 Struktur Arsitektur Kode (`App/`)
+##  Struktur Arsitektur Kode (`App/`)
 
 ```text
 app/
@@ -103,5 +103,5 @@ Ikuti langkah-langkah berikut untuk menjalankan NEXORA di komputer lokal Anda:
 
 ---
 
-## 📜 Lisensi
+##  Lisensi
 Dikembangkan untuk pengolahan data dan manajemen survei modern.
