@@ -6,9 +6,9 @@
             </a>
             <div>
                 <h2 class="font-black text-2xl text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500 tracking-tight">
-                    Input Responden Baru
+                    Input Responden Baru {{ isset($form) ? "({$form->title})" : '' }}
                 </h2>
-                <p class="text-sm text-gray-500 mt-1">Sistem akan otomatis mengompres foto sebelum diunggah.</p>
+                <p class="text-sm text-gray-500 mt-1">Sistem akan otomatis mengompres foto sebelum diunggah ke Cloudinary.</p>
             </div>
         </div>
     </x-slot>
@@ -30,13 +30,22 @@
                 <form id="respondent-form" action="{{ route('respondents.store') }}" method="POST" enctype="multipart/form-data" class="p-8">
                     @csrf
                     <input type="hidden" name="project_id" value="{{ $projectId }}">
+                    @if(isset($form))
+                        <input type="hidden" name="form_id" value="{{ $form->id }}">
+                    @endif
+
+                    @php
+                        $fieldsToRender = isset($form) && is_array($form->fields_schema) ? $form->fields_schema : ($project->master_fields ?? []);
+                        $hasPhotoOption = isset($form) ? $form->has_photo : $project->has_photo;
+                        $hasAgeCalcOption = isset($form) ? $form->has_age_calc : $project->has_age_calc;
+                    @endphp
 
                     <div class="mb-8">
                         <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mb-6">Data Responden</h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            @if(is_array($project->master_fields) && count($project->master_fields) > 0)
-                                @foreach($project->master_fields as $field)
+                            @if(is_array($fieldsToRender) && count($fieldsToRender) > 0)
+                                @foreach($fieldsToRender as $field)
                                     @php
                                         $fieldKey = \Illuminate\Support\Str::slug($field['name'], '_');
                                         $inputType = 'text';
@@ -50,7 +59,7 @@
                                 @endforeach
                             @else
                                 <div class="md:col-span-2 p-4 bg-yellow-50 text-yellow-700 rounded-xl border border-yellow-200 text-sm font-medium">
-                                    Project ini belum memiliki konfigurasi field data.
+                                    Form/Project ini belum memiliki konfigurasi field data.
                                 </div>
                             @endif
                         </div>
@@ -60,14 +69,14 @@
                         <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mb-6">Data Sistem</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                            @if($project->has_age_calc)
+                            @if($hasAgeCalcOption)
                             <div class="md:col-span-2 p-5 bg-purple-50/50 border border-purple-100 rounded-2xl">
                                 <label class="block text-sm font-semibold text-purple-900 mb-2">Tanggal Lahir</label>
                                 <input type="date" name="tanggal_lahir" required class="block w-full md:w-1/2 px-4 py-3 bg-white border border-purple-200 rounded-xl focus:ring-purple-500 focus:border-purple-500 transition shadow-sm">
                             </div>
                             @endif
 
-                            @if($project->has_photo)
+                            @if($hasPhotoOption)
                             <div class="md:col-span-2 p-6 bg-blue-50/50 border border-blue-100 rounded-2xl">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
                                     <div>

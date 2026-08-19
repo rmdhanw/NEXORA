@@ -11,7 +11,7 @@ class Respondent extends Model
     use HasFactory;
 
     protected $fillable = [
-        'project_id', 'nama', 'tempat_lahir', 'tanggal_lahir', 'alamat',
+        'project_id', 'form_id', 'nama', 'tempat_lahir', 'tanggal_lahir', 'alamat',
         'nik', 'album', 'keterangan', 'status', 'data_tambahan',
     ];
 
@@ -33,5 +33,10 @@ class Respondent extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function form()
+    {
+        return $this->belongsTo(Form::class);
     }
 }

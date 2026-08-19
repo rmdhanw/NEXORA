@@ -5,7 +5,7 @@
                 <div class="flex items-center gap-2 mb-1">
                     <a href="{{ route('projects.index') }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center transition-colors">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                        Kembali
+                        Kembali ke List Project
                     </a>
                 </div>
                 <h2 class="font-black text-3xl text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500 tracking-tight">
@@ -14,10 +14,15 @@
                 <p class="text-sm text-gray-500 mt-1 font-medium">{{ $project->deskripsi ?? 'Tidak ada deskripsi project.' }}</p>
             </div>
 
-            <a href="{{ route('respondents.create', ['project_id' => $project->id]) }}" class="group relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-300 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 rounded-xl hover:from-emerald-400 hover:via-emerald-500 hover:to-teal-500 shadow-[0_8px_30px_rgb(16,185,129,0.3)] hover:shadow-[0_8px_30px_rgb(16,185,129,0.5)] hover:-translate-y-1">
-                <svg class="w-5 h-5 mr-2 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                Input Responden
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('forms.create', ['project_id' => $project->id]) }}" class="inline-flex items-center px-4 py-2.5 font-bold text-sm text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-xl hover:bg-indigo-100 transition">
+                    + Tambah Form Baru
+                </a>
+                <a href="{{ route('respondents.create', ['project_id' => $project->id]) }}" class="group relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-300 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 rounded-xl hover:from-emerald-400 hover:via-emerald-500 hover:to-teal-500 shadow-[0_8px_30px_rgb(16,185,129,0.3)] hover:shadow-[0_8px_30px_rgb(16,185,129,0.5)] hover:-translate-y-1">
+                    <svg class="w-5 h-5 mr-2 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                    Input Responden
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -33,6 +38,13 @@
                     </div>
                 </div>
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="p-4 bg-purple-50 text-purple-600 rounded-xl"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-500">Form Tersedia</p>
+                        <h3 class="text-2xl font-black text-gray-900">{{ isset($forms) ? $forms->count() : 1 }}</h3>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
                     <div class="p-4 bg-emerald-50 text-emerald-600 rounded-xl"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
                     <div>
                         <p class="text-sm font-semibold text-gray-500">Telah Diinput</p>
@@ -41,7 +53,35 @@
                 </div>
             </div>
 
-</div>
+            <!-- Master Data Forms Section -->
+            @if(isset($forms) && $forms->count() > 0)
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-black text-gray-900">Master Data Forms (Daftar Form)</h3>
+                        <a href="{{ route('forms.create', ['project_id' => $project->id]) }}" class="text-sm font-bold text-indigo-600 hover:text-indigo-800">
+                            + Tambah Form Baru
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($forms as $formItem)
+                            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-bold text-gray-900 text-lg">{{ $formItem->title }}</h4>
+                                    <span class="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-full">Active</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mb-4 line-clamp-2">{{ $formItem->description ?? 'Form dinamis' }}</p>
+                                <div class="flex items-center justify-between text-xs text-gray-400 border-t pt-3">
+                                    <span>{{ is_array($formItem->fields_schema) ? count($formItem->fields_schema) : 0 }} Field Dinamis</span>
+                                    <div class="flex gap-2">
+                                        <a href="{{ route('forms.edit', $formItem->id) }}" class="text-indigo-600 hover:underline font-bold">Edit Form</a>
+                                        <a href="{{ route('respondents.create', ['project_id' => $project->id, 'form_id' => $formItem->id]) }}" class="text-emerald-600 hover:underline font-bold">+ Input Data</a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             <!-- Panel Filter & Pencarian -->
             <div class="bg-white/60 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
@@ -221,13 +261,12 @@
                                 </tr>
                            @empty
                                @php
-                                    // Checkbox + Status + Aksi = 3
                                     $colCount = 3;
                                     if(is_array($project->master_fields)) $colCount += count($project->master_fields);
                                     if($project->has_age_calc) $colCount++;
                                     if($project->has_photo) $colCount++;
                                     $colCount = max(4, $colCount);
-                                @endphp
+                               @endphp
                                 <tr>
                                     <td colspan="{{ $colCount }}" class="py-16 px-6 text-center border-b border-gray-50/50">
                                         <div class="flex flex-col items-center justify-center">
@@ -257,7 +296,6 @@
             const bulkDeleteInputs = document.getElementById('bulk-delete-inputs');
             const bulkDeleteForm = document.getElementById('bulk-delete-form');
 
-            // Fungsi memperbarui panel UI
             function updateBulkActionBar() {
                 const checkedBoxes = document.querySelectorAll('.respondent-checkbox:checked');
                 const checkedCount = checkedBoxes.length;
@@ -273,7 +311,6 @@
                 }
             }
 
-            // Aksi "Pilih Semua"
             if (selectAllCheckbox) {
                 selectAllCheckbox.addEventListener('change', function() {
                     respondentCheckboxes.forEach(checkbox => {
@@ -283,12 +320,10 @@
                 });
             }
 
-            // Aksi Centang Satuan
             respondentCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', updateBulkActionBar);
             });
 
-            // Eksekusi Hapus Massal
             window.confirmBulkDelete = function() {
                 const checkedBoxes = document.querySelectorAll('.respondent-checkbox:checked');
                 if (checkedBoxes.length === 0) return;

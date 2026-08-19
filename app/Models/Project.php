@@ -32,6 +32,11 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function forms()
+    {
+        return $this->hasMany(Form::class);
+    }
+
     public function respondents()
     {
         return $this->hasMany(Respondent::class);
